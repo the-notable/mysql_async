@@ -356,7 +356,7 @@ impl crate::Conn {
     {
         let local_infile = parse_local_infile_packet(&*packet)?;
         let (local_infile, handler) = match self.opts().local_infile_handler() {
-            Some(handler) => ((local_infile.into_owned(), handler)),
+            Some(handler) => (local_infile.into_owned(), handler),
             None => return Err(DriverError::NoLocalInfileHandler.into()),
         };
         let mut reader = handler.handle(local_infile.file_name_ref()).await?;

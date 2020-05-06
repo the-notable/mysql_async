@@ -141,7 +141,7 @@ impl<'a, T> std::fmt::Debug for BoxFuture<'a, T> {
 }
 
 #[doc(inline)]
-pub use self::conn::Conn;
+pub use self::conn::{BinlogRequest, Conn};
 
 #[doc(inline)]
 pub use self::conn::pool::Pool;
@@ -165,7 +165,7 @@ pub use self::opts::{
 pub use self::local_infile_handler::{builtin::WhiteListFsLocalInfileHandler, InfileHandlerFuture};
 
 #[doc(inline)]
-pub use mysql_common::packets::Column;
+pub use mysql_common::packets::{BinlogDumpFlags, Column, SidBlock};
 
 #[doc(inline)]
 pub use mysql_common::proto::codec::Compression;
