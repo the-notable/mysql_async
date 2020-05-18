@@ -37,18 +37,27 @@ impl Future for WritePacket<'_, '_> {
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         if self.data.is_some() {
             let codec = Pin::new(self.conn.stream_mut().codec.as_mut().expect("must be here"));
-            ready!(codec.poll_ready(cx))?;
+            ready!(codec.poll_ready(cx)).map_err(|err| {
+                self.conn.handle_broken();
+                err
+            })?
         }
 
         if let Some(data) = self.data.take() {
             let codec = Pin::new(self.conn.stream_mut().codec.as_mut().expect("must be here"));
             // to get here, stream must be ready
-            codec.start_send(data)?;
+            codec.start_send(data).map_err(|err| {
+                self.conn.handle_broken();
+                err
+            })?;
         }
 
         let codec = Pin::new(self.conn.stream_mut().codec.as_mut().expect("must be here"));
 
-        ready!(codec.poll_flush(cx))?;
+        ready!(codec.poll_flush(cx)).map_err(|err| {
+            self.conn.handle_broken();
+            err
+        })?;
 
         Poll::Ready(Ok(()))
     }

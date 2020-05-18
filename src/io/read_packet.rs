@@ -26,24 +26,33 @@ impl<'a, 't> ReadPacket<'a, 't> {
     pub(crate) fn new<T: Into<Connection<'a, 't>>>(conn: T) -> Self {
         Self(conn.into())
     }
+
+    pub fn conn_ref(&self) -> &crate::Conn {
+        &*self.0
+    }
 }
 
 impl Future for ReadPacket<'_, '_> {
     type Output = std::result::Result<Vec<u8>, IoError>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let packet_opt = ready!(Pin::new(self.0.stream_mut()).poll_next(cx)).transpose()?;
+        let next = ready!(Pin::new(self.0.stream_mut()).poll_next(cx)).transpose();
 
-        match packet_opt {
-            Some(packet) => {
+        match next {
+            Ok(Some(packet)) => {
                 self.0.touch();
                 Poll::Ready(Ok(packet))
             }
-            None => Poll::Ready(Err(Error::new(
+            Ok(None) => Poll::Ready(Err(Error::new(
                 ErrorKind::UnexpectedEof,
                 "connection closed",
             )
             .into())),
+            Err(io_err) => {
+                // looks like our connection is broken
+                self.0.handle_broken();
+                Poll::Ready(Err(io_err))
+            }
         }
     }
 }

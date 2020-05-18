@@ -141,7 +141,10 @@ impl<'a, T> std::fmt::Debug for BoxFuture<'a, T> {
 }
 
 #[doc(inline)]
-pub use self::conn::{BinlogRequest, Conn};
+pub use self::conn::{
+    binlog_stream::{BinlogRequest, BinlogStream},
+    Conn,
+};
 
 #[doc(inline)]
 pub use self::conn::pool::Pool;
