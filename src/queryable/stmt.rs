@@ -10,8 +10,8 @@ use mysql_common::{
     constants::MAX_PAYLOAD_LEN,
     named_params::parse_named_params,
     packets::{
-        column_from_payload, parse_stmt_packet, ComStmtClose, ComStmtExecuteRequestBuilder,
-        ComStmtSendLongData, StmtPacket,
+        parse_stmt_packet, ComStmtClose, ComStmtExecuteRequestBuilder, ComStmtSendLongData,
+        StmtPacket,
     },
 };
 
@@ -58,8 +58,8 @@ impl StatementLike for Statement {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct StmtInner {
     pub(crate) raw_query: Arc<str>,
-    columns: Option<Box<[Column]>>,
-    params: Option<Box<[Column]>>,
+    columns: Option<Box<[Column<'static>]>>,
+    params: Option<Box<[Column<'static>]>>,
     stmt_packet: StmtPacket,
     connection_id: u32,
 }
@@ -81,7 +81,7 @@ impl StmtInner {
         })
     }
 
-    pub(crate) fn with_params(mut self, params: Vec<Column>) -> Self {
+    pub(crate) fn with_params(mut self, params: Vec<Column<'static>>) -> Self {
         self.params = if params.is_empty() {
             None
         } else {
@@ -90,7 +90,7 @@ impl StmtInner {
         self
     }
 
-    pub(crate) fn with_columns(mut self, columns: Vec<Column>) -> Self {
+    pub(crate) fn with_columns(mut self, columns: Vec<Column<'static>>) -> Self {
         self.columns = if columns.is_empty() {
             None
         } else {
@@ -168,7 +168,7 @@ impl crate::Conn {
     /// Low-level helpers, that reads the given number of column packets terminated by EOF packet.
     ///
     /// Requires `num > 0`.
-    pub(crate) async fn read_column_defs<U>(&mut self, num: U) -> Result<Vec<Column>>
+    pub(crate) async fn read_column_defs<U>(&mut self, num: U) -> Result<Vec<Column<'static>>>
     where
         U: Into<usize>,
     {
@@ -177,7 +177,7 @@ impl crate::Conn {
         let packets = self.read_packets(num).await?;
         let defs = packets
             .into_iter()
-            .map(column_from_payload)
+            .map(|packet| Column::read(&packet[..]))
             .collect::<std::result::Result<Vec<Column>, _>>()
             .map_err(Error::from)?;
 
