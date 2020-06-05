@@ -68,6 +68,21 @@ impl futures_core::stream::Stream for BinlogStream {
                     }
                 }
             }
+            Ok(packet) if packet.get(0) == Some(&255) => {
+                let err_packet = mysql_common::packets::parse_err_packet(
+                    &packet,
+                    self.read_packet.conn_ref().capabilities(),
+                );
+                match err_packet {
+                    Ok(err) => return Poll::Ready(Some(Err(err.into()))),
+                    Err(_) => {
+                        return Poll::Ready(Some(Err(DriverError::UnexpectedPacket {
+                            payload: packet,
+                        }
+                        .into())))
+                    }
+                }
+            }
             Ok(packet) => {
                 return Poll::Ready(Some(Err(
                     DriverError::UnexpectedPacket { payload: packet }.into()

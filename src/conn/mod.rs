@@ -821,10 +821,11 @@ mod test {
     async fn should_read_binlog() -> super::Result<()> {
         async fn get_conn() -> super::Result<(Conn, String, u64)> {
             let mut conn = Conn::new(get_opts()).await?;
-            let (filename, position, _enc): (_, _, crate::Value) =
-                "SHOW BINARY LOGS".first(&mut conn).await?.unwrap();
+            let mut row: crate::Row = "SHOW BINARY LOGS".first(&mut conn).await?.unwrap();
+            let file_name = row.take(0).unwrap();
+            let position = row.take(1).unwrap();
             gen_dummy_data().await?;
-            Ok((conn, filename, position))
+            Ok((conn, file_name, position))
         }
 
         // iterate using COM_BINLOG_DUMP
