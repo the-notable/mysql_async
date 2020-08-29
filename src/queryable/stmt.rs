@@ -23,6 +23,7 @@ use crate::{
     queryable::BinaryProtocol,
     Column, Params, Value,
 };
+use crate::prelude::ConnectionInfo;
 
 /// Result of a `StatementLike::to_statement` call.
 pub enum ToStatementResult<'a> {

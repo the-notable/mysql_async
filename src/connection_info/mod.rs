@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use crate::{Opts, Conn};
+use crate::Opts;
 
 /// Provides metadata on the underlying connection
 pub trait ConnectionInfo {

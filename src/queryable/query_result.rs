@@ -18,6 +18,7 @@ use crate::{
     prelude::{FromRow, Protocol},
     Column, Row,
 };
+use crate::prelude::ConnectionInfo;
 
 /// Result set metadata.
 #[derive(Debug, Clone, Eq, PartialEq)]

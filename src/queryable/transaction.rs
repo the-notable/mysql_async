@@ -131,7 +131,7 @@ impl fmt::Display for IsolationLevel {
 #[derive(Debug)]
 pub struct Transaction<'a>(pub(crate) Connection<'a, 'static>);
 
-impl ConnectionInfo for Transaction {
+impl ConnectionInfo for Transaction<'_> {
     fn id(&self) -> u32 {
         self.0.id()
     }
