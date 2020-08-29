@@ -8,7 +8,9 @@
 
 use std::fmt;
 
-use crate::{connection_like::Connection, error::*, queryable::Queryable, Conn};
+use crate::{connection_like::Connection, error::*, queryable::Queryable, Conn, Opts};
+use crate::connection_info::ConnectionInfo;
+use std::borrow::Cow;
 
 /// Transaction status.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -128,6 +130,36 @@ impl fmt::Display for IsolationLevel {
 /// back implicitly when corresponding connection is dropped or queried.
 #[derive(Debug)]
 pub struct Transaction<'a>(pub(crate) Connection<'a, 'static>);
+
+impl ConnectionInfo for Transaction {
+    fn id(&self) -> u32 {
+        self.0.id()
+    }
+
+    fn last_insert_id(&self) -> Option<u64> {
+        self.0.last_insert_id()
+    }
+
+    fn affected_rows(&self) -> u64 {
+        self.0.affected_rows()
+    }
+
+    fn info(&self) -> Cow<'_, str> {
+        self.0.info()
+    }
+
+    fn get_warnings(&self) -> u16 {
+        self.0.get_warnings()
+    }
+
+    fn server_version(&self) -> (u16, u16, u16) {
+        self.0.server_version()
+    }
+
+    fn opts(&self) -> &Opts {
+        &self.0.opts()
+    }
+}
 
 impl<'a> Transaction<'a> {
     pub(crate) async fn new<T: Into<Connection<'a, 'static>>>(

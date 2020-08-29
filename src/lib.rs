@@ -113,6 +113,7 @@ mod local_infile_handler;
 mod opts;
 mod query;
 mod queryable;
+mod connection_info;
 
 #[must_use = "futures do nothing unless you `.await` or poll them"]
 pub struct BoxFuture<'a, T>(Pin<Box<dyn Future<Output = Result<T>> + Send + 'a>>);
@@ -212,6 +213,8 @@ pub mod prelude {
     pub use crate::query::{BatchQuery, Query, WithParams};
     #[doc(inline)]
     pub use crate::queryable::Queryable;
+    #[doc(inline)]
+    pub use crate::connection_info::ConnectionInfo;
     #[doc(inline)]
     pub use mysql_common::row::convert::FromRow;
     #[doc(inline)]
