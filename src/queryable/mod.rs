@@ -304,6 +304,8 @@ impl Queryable for Conn {
         let params = params.into();
         BoxFuture(Box::pin(async move {
             let statement = self.get_statement(stmt).await?;
+            println!("{:#?}", statement);
+            println!("{:#?}", params);
             self.execute_statement(&statement, params).await?;
             Ok(QueryResult::new(self))
         }))
